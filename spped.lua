@@ -1,29 +1,16 @@
--- 1. Load Orion UI Library
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
+-- 1. Сразу включаем скорость (как в твоей первой рабочей версии)
+game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 200
 
--- 2. Create Window
-local Window = OrionLib:MakeWindow({Name = "My First Hub", HidePremium = false, SaveConfig = true})
+-- 2. Включаем бесконечный цикл для авто-атаки (автофарм)
+_G.AutoAttack = true -- Если захочешь выключить, поменяй true на false
 
--- 3. Create Tab
-local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4483345998"})
-
--- 4. Speedhack Button
-MainTab:AddButton({
-    Name = "Speedhack 200",
-    Callback = function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 200
-        OrionLib:MakeNotification({Name = "Success", Text = "Speed set to 200", Time = 2})
-    end    
-})
-
--- 5. Autofarm Button (Placeholder)
-MainTab:AddButton({
-    Name = "Autofarm (ON)",
-    Callback = function()
-        print("Autofarm started!")
-        OrionLib:MakeNotification({Name = "Status", Text = "Autofarm enabled (test)", Time = 2})
-    end    
-})
-
--- Initialize
-OrionLib:Init()
+spawn(function()
+    while _G.AutoAttack do
+        -- Этот код имитирует клик мышки (удар в игре) каждые 0.1 секунды
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton1(Vector2.new(0, 0))
+        
+        task.wait(0.1) -- Скорость ударов
+    end
+end)
