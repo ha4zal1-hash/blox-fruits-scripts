@@ -1,314 +1,233 @@
 -- ====================================================================
---                      LYUT1E HUB — PREMIUM EDITION (2026)
+--            LYUT1E HUB V2 — THIRD SEA OVERHAUL (2026)
 -- ====================================================================
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- Защита от дублирования интерфейса
-if CoreGui:FindFirstChild("lyut1eHub") then
-    CoreGui.lyut1eHub:Destroy()
-end
+if CoreGui:FindFirstChild("lyut1eHub") then CoreGui.lyut1eHub:Destroy() end
 
--- Основной контейнер GUI
-local ScreenGui = Instance.new("ScreenGui")
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "lyut1eHub"
-ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Главный фрейм (Окно хаба)
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 560, 0, 390)
-MainFrame.Position = UDim2.new(0.3, 0, 0.25, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true -- Перетаскивание по экрану мышкой/пальцем
-MainFrame.Parent = ScreenGui
+-- Главное окно
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 580, 0, 410)
+MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+MainFrame.Active = true; MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainFrame
+-- Сайдбар
+local Sidebar = Instance.new("Frame", MainFrame)
+Sidebar.Size = UDim2.new(0, 160, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
 
--- Боковое меню (Сайдбар для вкладок)
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 150, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-Sidebar.BorderSizePixel = 0
-Sidebar.Parent = MainFrame
-
-local SidebarCorner = Instance.new("UICorner")
-SidebarCorner.CornerRadius = UDim.new(0, 12)
-SidebarCorner.Parent = Sidebar
-
--- Логотип / Название хаба
-local Logo = Instance.new("TextLabel")
+local Logo = Instance.new("TextLabel", Sidebar)
 Logo.Size = UDim2.new(1, 0, 0, 50)
-Logo.Text = "lyut1e hub"
-Logo.TextColor3 = Color3.fromRGB(0, 220, 255) -- Сочный бирюзовый неон
-Logo.TextSize = 22
+Logo.Text = "lyut1e hub v2"
+Logo.TextColor3 = Color3.fromRGB(0, 255, 200)
+Logo.TextSize = 20
 Logo.Font = Enum.Font.FredokaOne
 Logo.BackgroundTransparency = 1
-Logo.Parent = Sidebar
 
--- Декоративная неоновая полоска под логотипом
-local Line = Instance.new("Frame")
-Line.Size = UDim2.new(0.8, 0, 0, 2)
-Line.Position = UDim2.new(0.1, 0, 0, 45)
-Line.BackgroundColor3 = Color3.fromRGB(0, 220, 255)
-Line.BorderSizePixel = 0
-Line.Parent = Sidebar
-
--- Главная рабочая область для страниц
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, -165, 1, -20)
-ContentFrame.Position = UDim2.new(0, 155, 0, 10)
+local ContentFrame = Instance.new("Frame", MainFrame)
+ContentFrame.Size = UDim2.new(1, -175, 1, -20)
+ContentFrame.Position = UDim2.new(0, 170, 0, 10)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
 
-local Pages = {}
-local TotalPages = 0
+local Pages, TotalPages = {}, 0
 
--- Функция создания страниц (категорий)
 local function CreatePage(name)
     TotalPages = TotalPages + 1
-    
-    local Page = Instance.new("ScrollingFrame")
+    local Page = Instance.new("ScrollingFrame", ContentFrame)
     Page.Size = UDim2.new(1, 0, 1, 0)
-    Page.BackgroundTransparency = 1
-    Page.BorderSizePixel = 0
-    Page.ScrollBarThickness = 4
-    Page.ScrollBarImageColor3 = Color3.fromRGB(0, 220, 255)
-    Page.Visible = false
-    Page.Parent = ContentFrame
+    Page.BackgroundTransparency = 1; Page.BorderSizePixel = 0
+    Page.ScrollBarThickness = 4; Page.Visible = (TotalPages == 1)
+    local Layout = Instance.new("UIListLayout", Page)
+    Layout.Padding = UDim.new(0, 8)
     
-    local Layout = Instance.new("UIListLayout")
-    Layout.Padding = UDim.new(0, 10)
-    Layout.SortOrder = Enum.SortOrder.LayoutOrder
-    Layout.Parent = Page
-    
-    Pages[name] = Page
-    
-    -- Кнопка переключения вкладки в сайдбаре
-    local TabButton = Instance.new("TextButton")
+    local TabButton = Instance.new("TextButton", Sidebar)
     TabButton.Size = UDim2.new(0.85, 0, 0, 36)
-    TabButton.Position = UDim2.new(0.075, 0, 0, 60 + ((TotalPages - 1) * 44))
-    TabButton.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+    TabButton.Position = UDim2.new(0.075, 0, 0, 60 + ((TotalPages - 1) * 42))
+    TabButton.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     TabButton.Text = "  " .. name
-    TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TabButton.TextSize = 14
+    TabButton.TextColor3 = Color3.fromRGB(240, 240, 240)
     TabButton.TextXAlignment = Enum.TextXAlignment.Left
     TabButton.Font = Enum.Font.SourceSansBold
-    TabButton.Parent = Sidebar
-    
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 6)
-    BtnCorner.Parent = TabButton
+    Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 6)
     
     TabButton.MouseButton1Click:Connect(function()
         for _, p in pairs(Pages) do p.Visible = false end
         Page.Visible = true
     end)
-    
-    if TotalPages == 1 then Page.Visible = true end -- Показываем первую страницу сразу
+    Pages[name] = Page
     return Page
 end
 
--- Функция добавления заголовков секций
-local function AddSection(page, titleText)
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.95, 0, 0, 25)
-    Label.Text = "—— " .. string.upper(titleText) .. " ——"
-    Label.TextColor3 = Color3.fromRGB(120, 120, 130)
-    Label.TextSize = 12
-    Label.Font = Enum.Font.SourceSansBold
-    Label.BackgroundTransparency = 1
-    Label.Parent = page
-end
-
--- Функция добавления обычных функциональных кнопок
-local function AddButton(page, text, callback)
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0.95, 0, 0, 38)
-    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(240, 240, 240)
-    Btn.TextSize = 15
-    Btn.Font = Enum.Font.SourceSansSemibold
-    Btn.Parent = page
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 6)
-    Corner.Parent = Btn
-    
-    -- Визуальный эффект при наведении мыши/нажатии
-    Btn.MouseEnter:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 48) end)
-    Btn.MouseLeave:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 35) end)
-    
-    Btn.MouseButton1Click:Connect(callback)
-end
-
--- Функция добавления переключателей (On/Off)
 local function AddToggle(page, text, callback)
-    local Frame = Instance.new("Frame")
+    local Frame = Instance.new("Frame", page)
     Frame.Size = UDim2.new(0.95, 0, 0, 40)
-    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    Frame.Parent = page
+    Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
     
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 6)
-    Corner.Parent = Frame
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(0.7, 0, 1, 0); Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.Text = text; Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextXAlignment = Enum.TextXAlignment.Left; Label.TextSize = 14; Label.BackgroundTransparency = 1
     
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.7, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.Text = text
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.TextSize = 15
-    Label.BackgroundTransparency = 1
-    Label.Font = Enum.Font.SourceSansSemibold
-    Label.Parent = Frame
-    
-    local Indicator = Instance.new("TextButton")
-    Indicator.Size = UDim2.new(0, 55, 0, 24)
-    Indicator.Position = UDim2.new(0.8, 0, 0.2, 0)
-    Indicator.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-    Indicator.Text = "OFF"
-    Indicator.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Indicator.Font = Enum.Font.SourceSansBold
-    Indicator.TextSize = 13
-    Indicator.Parent = Frame
-    
-    local IndCorner = Instance.new("UICorner")
-    IndCorner.CornerRadius = UDim.new(0, 4)
-    IndCorner.Parent = Indicator
+    local Indicator = Instance.new("TextButton", Frame)
+    Indicator.Size = UDim2.new(0, 55, 0, 24); Indicator.Position = UDim2.new(0.78, 0, 0.2, 0)
+    Indicator.BackgroundColor3 = Color3.fromRGB(200, 50, 50); Indicator.Text = "OFF"
+    Indicator.TextColor3 = Color3.fromRGB(255, 255, 255); Instance.new("UICorner", Indicator).CornerRadius = UDim.new(0, 4)
     
     local state = false
     Indicator.MouseButton1Click:Connect(function()
         state = not state
-        if state then
-            Indicator.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-            Indicator.Text = "ON"
-        else
-            Indicator.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-            Indicator.Text = "OFF"
-        end
+        Indicator.BackgroundColor3 = state and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+        Indicator.Text = state and "ON" or "OFF"
         callback(state)
     end)
 end
 
+local function AddButton(page, text, callback)
+    local B = Instance.new("TextButton", page)
+    B.Size = UDim2.new(0.95, 0, 0, 36); B.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    B.Text = text; B.TextColor3 = Color3.fromRGB(240, 240, 240); B.TextSize = 14
+    B.Font = Enum.Font.SourceSansSemibold; Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6)
+    B.MouseButton1Click:Connect(callback)
+end
+
+-- Вкладки
+local FarmPage = CreatePage("Main Farm")
+local TeleportPage = CreatePage("Third Sea TPs")
+local StatusPage = CreatePage("Stats & Local")
+
 -- ====================================================================
---                  ИНИЦИАЛИЗАЦИЯ СТРАНИЦ И ФУНКЦИЙ
+-- ЛОГИКА И СКРИПТЫ (ТРЕТИЙ МИР)
 -- ====================================================================
-local FarmTab = CreatePage("Main & Farm")
-local MoveTab = CreatePage("Movement")
-local TeleportTab = CreatePage("Teleports")
-local MiscTab = CreatePage("Misc Settings")
 
--- [1. СТРАНИЦА ФАРМА]
-AddSection(FarmTab, "Combat Hacks")
-
-local AutoAttack = false
-local AttackSpeed = 0.05
-
-AddToggle(FarmTab, "Fast Auto Attack (Clicker)", function(state)
-    AutoAttack = state
-end)
-
--- Отдельный быстрый поток для обработки ударов
-task.spawn(function()
-    while true do
-        if AutoAttack then
-            local VirtualUser = game:GetService("VirtualUser")
-            VirtualUser:CaptureController()
-            VirtualUser:ClickButton1(Vector2.new(0, 0))
-        end
-        task.wait(AttackSpeed)
-    end
-end)
-
-AddSection(FarmTab, "Attack Speed Tweak")
-AddButton(FarmTab, "Set Attack Speed: Ludicrous (0.01s)", function() AttackSpeed = 0.01 end)
-AddButton(FarmTab, "Set Attack Speed: Safe (0.08s)", function() AttackSpeed = 0.08 end)
-
--- [2. СТРАНИЦА ДВИЖЕНИЯ]
-AddSection(MoveTab, "Speed Modifier")
-
-AddButton(MoveTab, "Speedhack: Max Velocity (250)", function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 250
-    end
-end)
-
-AddButton(MoveTab, "Speedhack: Legit Speed (60)", function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 60
-    end
-end)
-
-AddButton(MoveTab, "Reset Speed to Standard (16)", function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 16
-    end
-end)
-
-AddSection(MoveTab, "Air Control")
-local InfJump = false
-AddToggle(MoveTab, "Enable Infinite Jump", function(state)
-    InfJump = state
-end)
-
-UserInputService.JumpRequest:Connect(function()
-    if InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
--- [3. СТРАНИЦА ТЕЛЕПОРТОВ]
-AddSection(TeleportTab, "Sea 1 Locations")
-
-local function tp(x, y, z)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+-- Безопасный телепорт (Tween) против античита
+local function SecureTP(targetCFrame)
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local distance = (hrp.Position - targetCFrame.Position).Magnitude
+        local speed = 250 -- Оптимальная скорость плавного полета в 2026 году
+        local info = TweenInfo.new(distance / speed, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(hrp, info, {CFrame = targetCFrame})
+        tween:Play()
+        return tween
     end
 end
 
-AddButton(TeleportTab, "TP: Pirate Starter Island", function() tp(979, 16, 1429) end)
-AddButton(TeleportTab, "TP: Jungle Island", function() tp(-1611, 36, 147) end)
-AddButton(TeleportTab, "TP: Pirate Village", function() tp(-1181, 4, 3848) end)
-AddButton(TeleportTab, "TP: Desert Island", function() tp(1094, 6, 4195) end)
-AddButton(TeleportTab, "TP: Frozen Village (Snow)", function() tp(1286, 6, -1342) end)
+-- Авто-экипировка боевого стиля (Melee)
+local function EquipWeapon()
+    local backpack = LocalPlayer.Backpack
+    local char = LocalPlayer.Character
+    if char then
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and (tool.ToolTip == "Melee" or tool:FindFirstChild("Combat")) then
+                char.Humanoid:EquipTool(tool)
+                break
+            end
+        end
+    end
+end
 
--- [4. СТРАНИЦА НАСТРОЕК (MISC)]
-AddSection(MiscTab, "Server Management")
-
-AddButton(MiscTab, "Rejoin Current Server", function()
-    TeleportService:Teleport(game.PlaceId, LocalPlayer)
+-- 1. Вкладка фарма
+local AutoFarm = false
+AddToggle(FarmPage, "Auto Farm Level (Third Sea)", function(state)
+    AutoFarm = state
 end)
 
-AddSection(MiscTab, "UI Control")
-AddButton(MiscTab, "Completely Destroy GUI", function()
-    ScreenGui:Destroy()
+local FastAttack = false
+AddToggle(FarmPage, "Super Fast Attack", function(state)
+    FastAttack = state
 end)
 
--- Кнопка быстрого закрытия меню (Верхний правый угол)
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 26, 0, 26)
-CloseBtn.Position = UDim2.new(1, -34, 0, 8)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Text = "×"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.TextSize = 20
-CloseBtn.Parent = MainFrame
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 6)
-CloseCorner.Parent = CloseBtn
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+-- Поток для автофарма
+task.spawn(function()
+    while true do
+        if AutoFarm then
+            pcall(function()
+                EquipWeapon()
+                -- Поиск ближайшего моба в Третьем мире
+                local targetMob = nil
+                for _, v in pairs(workspace.Enemies:GetChildren()) do
+                    if v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+                        targetMob = v
+                        break
+                    end
+                end
+                
+                if targetMob then
+                    -- Телепортируемся НАД мобом, чтобы он нас не бил
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                else
+                    -- Если мобов нет, летим на спавн мобов Третьего мира (Плавающий замок для примера)
+                    SecureTP(CFrame.new(-9511, 400, -5111))
+                end
+            end)
+        end
+        task.wait(0.1)
+    end
 end)
+
+-- Поток быстрых ударов
+task.spawn(function()
+    while true do
+        if FastAttack or AutoFarm then
+            local VU = game:GetService("VirtualUser")
+            VU:CaptureController()
+            VU:ClickButton1(Vector2.new(0, 0))
+        end
+        task.wait(0.01) -- Максимальная скорость кликов
+    end
+end)
+
+-- 2. Вкладка телепортов (Только Третий мир!)
+AddButton(TeleportPage, "TP to Floating Turtle (Черепаха)", function()
+    SecureTP(CFrame.new(-13240, 330, -7670))
+end)
+
+AddButton(TeleportPage, "TP to Castle on the Sea (Замок)", function()
+    SecureTP(CFrame.new(-9511, 400, -5111))
+end)
+
+AddButton(TeleportPage, "TP to Hydra Island (Гидра)", function()
+    SecureTP(CFrame.new(5230, 10, -1210))
+end)
+
+AddButton(TeleportPage, "TP to Port Town (Порт)", function()
+    SecureTP(CFrame.new(-5340, 20, -5300))
+end)
+
+-- 3. Настройки персонажа
+local SpeedValue = 16
+AddButton(StatusPage, "Boost Speed (100)", function()
+    SpeedValue = 100
+end)
+AddButton(StatusPage, "Reset Speed (16)", function()
+    SpeedValue = 16
+end)
+
+task.spawn(function()
+    while true do
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- Кнопка закрытия Х
+local Cl = Instance.new("TextButton", MainFrame)
+Cl.Size = UDim2.new(0, 24, 0, 24); Cl.Position = UDim2.new(1, -30, 0, 8)
+Cl.BackgroundColor3 = Color3.fromRGB(180, 50, 50); Cl.Text = "X"; Cl.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", Cl).CornerRadius = UDim.new(0, 4)
+Cl.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
