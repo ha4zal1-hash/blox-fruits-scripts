@@ -1,10 +1,11 @@
 -- ====================================================================
---            LYUT1E HUB V2 — THIRD SEA OVERHAUL (2026)
+--            LYUT1E HUB V2 — ULTIMATE UNLEASHED (THIRD SEA)
 -- ====================================================================
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 if CoreGui:FindFirstChild("lyut1eHub") then CoreGui.lyut1eHub:Destroy() end
@@ -15,23 +16,23 @@ ScreenGui.ResetOnSpawn = false
 
 -- Главное окно
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 580, 0, 410)
+MainFrame.Size = UDim2.new(0, 600, 0, 430)
 MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
 MainFrame.Active = true; MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
 
 -- Сайдбар
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0, 160, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
+Sidebar.BackgroundColor3 = Color3.fromRGB(6, 6, 8)
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
 
 local Logo = Instance.new("TextLabel", Sidebar)
 Logo.Size = UDim2.new(1, 0, 0, 50)
 Logo.Text = "lyut1e hub v2"
 Logo.TextColor3 = Color3.fromRGB(0, 255, 200)
-Logo.TextSize = 20
+Logo.TextSize = 22
 Logo.Font = Enum.Font.FredokaOne
 Logo.BackgroundTransparency = 1
 
@@ -47,14 +48,14 @@ local function CreatePage(name)
     local Page = Instance.new("ScrollingFrame", ContentFrame)
     Page.Size = UDim2.new(1, 0, 1, 0)
     Page.BackgroundTransparency = 1; Page.BorderSizePixel = 0
-    Page.ScrollBarThickness = 4; Page.Visible = (TotalPages == 1)
+    Page.ScrollBarThickness = 4; Page.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200); Page.Visible = (TotalPages == 1)
     local Layout = Instance.new("UIListLayout", Page)
     Layout.Padding = UDim.new(0, 8)
     
     local TabButton = Instance.new("TextButton", Sidebar)
     TabButton.Size = UDim2.new(0.85, 0, 0, 36)
     TabButton.Position = UDim2.new(0.075, 0, 0, 60 + ((TotalPages - 1) * 42))
-    TabButton.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    TabButton.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
     TabButton.Text = "  " .. name
     TabButton.TextColor3 = Color3.fromRGB(240, 240, 240)
     TabButton.TextXAlignment = Enum.TextXAlignment.Left
@@ -72,7 +73,7 @@ end
 local function AddToggle(page, text, callback)
     local Frame = Instance.new("Frame", page)
     Frame.Size = UDim2.new(0.95, 0, 0, 40)
-    Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
     
     local Label = Instance.new("TextLabel", Frame)
@@ -96,36 +97,43 @@ end
 
 local function AddButton(page, text, callback)
     local B = Instance.new("TextButton", page)
-    B.Size = UDim2.new(0.95, 0, 0, 36); B.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    B.Size = UDim2.new(0.95, 0, 0, 36); B.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     B.Text = text; B.TextColor3 = Color3.fromRGB(240, 240, 240); B.TextSize = 14
     B.Font = Enum.Font.SourceSansSemibold; Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6)
     B.MouseButton1Click:Connect(callback)
 end
 
--- Вкладки
+local function AddSection(page, txt)
+    local L = Instance.new("TextLabel", page)
+    L.Size = UDim2.new(0.95, 0, 0, 20); L.Text = "— " .. string.upper(txt) .. " —"; L.TextColor3 = Color3.fromRGB(100, 100, 110)
+    L.TextSize = 11; L.Font = Enum.Font.SourceSansBold; L.BackgroundTransparency = 1
+end
+
+-- Вкладки хаба
 local FarmPage = CreatePage("Main Farm")
+local CombatPage = CreatePage("Combat & Stats")
+local MovePage = CreatePage("Movement & Exploit")
 local TeleportPage = CreatePage("Third Sea TPs")
-local StatusPage = CreatePage("Stats & Local")
+local VisualPage = CreatePage("Visuals / ESP")
 
 -- ====================================================================
--- ЛОГИКА И СКРИПТЫ (ТРЕТИЙ МИР)
+--                      ДВИЖОК СКРИПТОВ
 -- ====================================================================
 
--- Безопасный телепорт (Tween) против античита
+-- Настройки твинов
 local function SecureTP(targetCFrame)
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if hrp then
         local distance = (hrp.Position - targetCFrame.Position).Magnitude
-        local speed = 250 -- Оптимальная скорость плавного полета в 2026 году
-        local info = TweenInfo.new(distance / speed, Enum.EasingStyle.Linear)
+        local info = TweenInfo.new(distance / 250, Enum.EasingStyle.Linear)
         local tween = TweenService:Create(hrp, info, {CFrame = targetCFrame})
         tween:Play()
         return tween
     end
 end
 
--- Авто-экипировка боевого стиля (Melee)
+-- Авто-экипировка боевого стиля
 local function EquipWeapon()
     local backpack = LocalPlayer.Backpack
     local char = LocalPlayer.Character
@@ -139,38 +147,27 @@ local function EquipWeapon()
     end
 end
 
--- 1. Вкладка фарма
+-- [1. ВКЛАДКА ФАРМА]
+AddSection(FarmPage, "Level Farming")
 local AutoFarm = false
-AddToggle(FarmPage, "Auto Farm Level (Third Sea)", function(state)
-    AutoFarm = state
-end)
+AddToggle(FarmPage, "Auto Farm Level (Third Sea)", function(v) AutoFarm = v end)
 
-local FastAttack = false
-AddToggle(FarmPage, "Super Fast Attack", function(state)
-    FastAttack = state
-end)
-
--- Поток для автофарма
 task.spawn(function()
     while true do
         if AutoFarm then
             pcall(function()
                 EquipWeapon()
-                -- Поиск ближайшего моба в Третьем мире
-                local targetMob = nil
+                local enemy = nil
                 for _, v in pairs(workspace.Enemies:GetChildren()) do
                     if v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
-                        targetMob = v
-                        break
+                        enemy = v; break
                     end
                 end
-                
-                if targetMob then
-                    -- Телепортируемся НАД мобом, чтобы он нас не бил
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                if enemy then
+                    -- Встаем над мобом, чтобы он мазал
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 11, 0)
                 else
-                    -- Если мобов нет, летим на спавн мобов Третьего мира (Плавающий замок для примера)
-                    SecureTP(CFrame.new(-9511, 400, -5111))
+                    SecureTP(CFrame.new(-9511, 400, -5111)) -- Лобби замка, если пусто
                 end
             end)
         end
@@ -178,50 +175,113 @@ task.spawn(function()
     end
 end)
 
--- Поток быстрых ударов
+-- [2. БОЙ И АВТО-СТАТЫ]
+AddSection(CombatPage, "Fast Attack Tweak")
+local FastAttack = false
+AddToggle(CombatPage, "Super Fast Attack", function(v) FastAttack = v end)
+
 task.spawn(function()
     while true do
         if FastAttack or AutoFarm then
             local VU = game:GetService("VirtualUser")
-            VU:CaptureController()
-            VU:ClickButton1(Vector2.new(0, 0))
+            VU:CaptureController(); VU:ClickButton1(Vector2.new(0, 0))
         end
-        task.wait(0.01) -- Максимальная скорость кликов
+        task.wait(0.005) -- Ультра-кликер 2026 года
     end
 end)
 
--- 2. Вкладка телепортов (Только Третий мир!)
-AddButton(TeleportPage, "TP to Floating Turtle (Черепаха)", function()
-    SecureTP(CFrame.new(-13240, 330, -7670))
+AddSection(CombatPage, "Auto Assign Stats")
+local AutoStats = false
+AddToggle(CombatPage, "Auto Upgrade Melee Stats", function(v) AutoStats = v end)
+
+task.spawn(function()
+    while true do
+        if AutoStats then
+            pcall(function()
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 1)
+            end)
+        end
+        task.wait(0.5)
+    end
 end)
 
-AddButton(TeleportPage, "TP to Castle on the Sea (Замок)", function()
-    SecureTP(CFrame.new(-9511, 400, -5111))
+-- [3. ДВИЖЕНИЕ И EXPLOIT (ОБНОВЛЕНИЕ)]
+AddSection(MovePage, "Noclip Wallhack")
+local Noclip = false
+AddToggle(MovePage, "Enable Noclip (Сквозь стены)", function(v) Noclip = v end)
+
+RunService.Stepped:Connect(function()
+    if Noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
 end)
 
-AddButton(TeleportPage, "TP to Hydra Island (Гидра)", function()
-    SecureTP(CFrame.new(5230, 10, -1210))
-end)
-
-AddButton(TeleportPage, "TP to Port Town (Порт)", function()
-    SecureTP(CFrame.new(-5340, 20, -5300))
-end)
-
--- 3. Настройки персонажа
+AddSection(MovePage, "Movement physics")
 local SpeedValue = 16
-AddButton(StatusPage, "Boost Speed (100)", function()
-    SpeedValue = 100
-end)
-AddButton(StatusPage, "Reset Speed (16)", function()
-    SpeedValue = 16
-end)
+AddButton(MovePage, "Set Speed to 120", function() SpeedValue = 120 end)
+AddButton(MovePage, "Set Speed to 250", function() SpeedValue = 250 end)
+AddButton(MovePage, "Reset Speed (16)", function() SpeedValue = 16 end)
 
 task.spawn(function()
     while true do
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
         end
-        task.wait(0.5)
+        task.wait(0.2)
+    end
+end)
+
+local InfJump = false
+AddToggle(MovePage, "Infinite Jump (Бесконечный прыжок)", function(v) InfJump = v end)
+UserInputService.JumpRequest:Connect(function()
+    if InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+-- [4. ТЕЛЕПОРТЫ (ТРЕТИЙ МИР)]
+AddSection(TeleportPage, "Safe Teleports")
+AddButton(TeleportPage, "Floating Turtle (Черепаха)", function() SecureTP(CFrame.new(-13240, 330, -7670)) end)
+AddButton(TeleportPage, "Castle on the Sea (Замок)", function() SecureTP(CFrame.new(-9511, 400, -5111)) end)
+AddButton(TeleportPage, "Hydra Island (Гидра)", function() SecureTP(CFrame.new(5230, 10, -1210)) end)
+AddButton(TeleportPage, "Port Town (Порт)", function() SecureTP(CFrame.new(-5340, 20, -5300)) end)
+
+-- [5. ВИЗУАЛЫ И ESP]
+AddSection(VisualPage, "Wallhack Player ESP")
+local EspEnabled = false
+local EspFolders = {}
+
+local function CreateESP(player)
+    if player == LocalPlayer then return end
+    local function apply()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and not player.Character.HumanoidRootPart:FindFirstChild("Lyut1eHighlight") then
+            local Highlight = Instance.new("Highlight")
+            Highlight.Name = "Lyut1eHighlight"
+            Highlight.FillColor = Color3.fromRGB(0, 255, 200)
+            Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+            Highlight.FillTransparency = 0.5
+            Highlight.Parent = player.Character.HumanoidRootPart
+        end
+    end
+    player.CharacterAdded:Connect(apply)
+    if player.Character then apply() end
+end
+
+AddToggle(VisualPage, "Player Highlight ESP (Сквозь стены)", function(v)
+    EspEnabled = v
+    if EspEnabled then
+        for _, p in pairs(Players:GetPlayers()) do CreateESP(p) end
+        Players.PlayerAdded:Connect(CreateESP)
+    else
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.HumanoidRootPart:FindFirstChild("Lyut1eHighlight") then
+                p.Character.HumanoidRootPart.Lyut1eHighlight:Destroy()
+            end
+        end
     end
 end)
 
